@@ -19,7 +19,8 @@
 
 
 #include <msp430.h>
-#include "nok5110LCD.h" // remove _lab from file names
+#include "nok5110LCD.h"
+#include "usciSpi.h"
 
 
 // 2-D 84x6 array that stores the current pixelated state of the display.
@@ -43,12 +44,13 @@ static unsigned char currentPixelDisplay[LCD_MAX_COL][LCD_MAX_ROW / LCD_ROW_IN_B
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
 void nokLcdInit(void) {
-
-
-
-    // do an SPI init with ucsiB1SpiInit  from ucsiSpi.h before this function call!!
-
-    // add power-on RST sequence here.  The display is not powered until this sequence occurs.
+    // power-on RST sequence here.  The display is not powered until this sequence occurs.
+    // init PWR RST pins
+    P2DIR |= BIT3 + BIT6;
+    // hold VCC and RES low
+    P2OUT &= ~(BIT3 + BIT6);
+    // power on
+    _PWR;
 
     P4OUT   &=  ~(SCE | DAT_CMD);   // Set DC and CE Low. This should be made a macro.  But is this command necassary? Doesn't nokLcdWrite do it?
 
@@ -60,7 +62,7 @@ void nokLcdInit(void) {
     nokLcdWrite(LCD_BASIC_INSTR, DC_CMD);
     nokLcdWrite(LCD_NORMAL_DISP, DC_CMD);
 
-    nokLcdClear(void); // clear the pixel memory and hence the display.
+    nokLcdClear(); // clear the pixel memory and hence the display.
     /* Sometimes necessary since the pixel ram is not defined after a PWR on and RST. The best practice would be to
      always clear it so no residual pixels are set. You will sometimes see random pixels set and I think it is from not clearing the memory
      which must be done manually. Try removing this function to see what happens.*/
@@ -84,15 +86,27 @@ void nokLcdWrite(char lcdByte, char cmdType) {
 	// ********** complete this function. *************
 
 	// check cmdType and output correct DAT_CMD signal to PORT4 based on it. Use definitions in .h file
+    switch(cmdType){
+        // -- if its a command, issue a 0
+        case DC_CMD:  P4OUT &= ~DAT_CMD;
+                      break;
+        // -- if its data, issue a 1
+        case DC_DAT:  P4OUT |= DAT_CMD;
+                      break;
 
+        default: break;
+    }
 	// activate the SCE  chip select
+    P4OUT |= SCE;
 
-	// transmit lcdByte with spiPutChar from Lab 3.  That function must stay in the spi C module.
+    // transmit lcdByte with spiPutChar from Lab 3.  That function must stay in the spi C module.
+    usciB1SpiPutChar(lcdByte);
 
-	// wait for SPI transmission to complete. You need to poll an SPI interrupt flag. Which one RXIFG or TXIFG? Understand why.
+    // wait for SPI transmission to complete. You need to poll an SPI interrupt flag. Which one RXIFG or TXIFG? Understand why.
+    while (!(UCB1IFG & UCRXIFG)); // When RXIFG == 1, RXBUF has received a complete character
 
     // when transmission is complete deactivate the SCE */
-
+    P4OUT &= ~SCE;
 }
 
 

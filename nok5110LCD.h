@@ -8,14 +8,14 @@
 
 // nok5110LCD pin connectivity --> to MSP-EXP430F5529LP EVM.
 // Assumes UCB1SI  is used.
-//  8-LIGHT  	-->  	no connection necessary unless you want it on
-//  7-SCLK  	-->  	MS430EVM  P4.3 or UCB1CLK
-//  6-DN(MOSI)  -->  	MS430EVM  P4.1 or UCB1SIMO
-//  5-D/C'  	-->  	MS430EVM  P4.2. 	Kept as I/O pin !!
-//  4-RST'  	-->  	MS430EVM or supply VSS.  Can tie to I/O pin if user wants. data sheet says RESET is necassary .. but?
-//  3-SCE'  	-->  	MS430EVM  P4.0. chip select 	Kept as I/O pin !!
-//  2-GND  		-->  	MS430EVM or supply VSS
-//  1-VCC  		-->  	MS430EVM or supply 3V3
+//  8-GND  		-->  	MS430EVM or supply VSS
+//  7-LIGHT     -->     no connection necessary unless you want it on
+//  6-VCC  		-->  	MS430EVM or supply 3V3
+//  5-SCLK      -->     MS430EVM  P4.3 or UCB1CLK
+//  4-DN(MOSI)  -->     MS430EVM  P4.1 or UCB1SIMO
+//  3-D/C'      -->     MS430EVM  P4.2.     Kept as I/O pin !!
+//  2-SCE'      -->     MS430EVM  P4.0. chip select     Kept as I/O pin !!
+//  1-RST'      -->     MS430EVM or supply VSS.  Can tie to I/O pin if user wants. data sheet says RESET is necessary .. but?
 
 
 #ifndef nok5110LCD_H_
@@ -48,7 +48,9 @@
 
 #define LCD_ROW_IN_BANK 8 	    // 8 rows in a bank. 6 banks, so  8x6 = 48 rows of pixels. y coordinate
 
-
+//-- added by me
+#define _PWR P2OUT |= BIT6;                // power on transistor
+#define _RST P2OUT &= ~BIT3; P2OUT |= BIT3 // reset strobe
 
 
 /************************************************************************************
@@ -62,10 +64,6 @@
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
 void nokLcdInit(void);
-
-
-
-
 
 /************************************************************************************
 * Function: nokLcdSetPixel
@@ -81,7 +79,6 @@ void nokLcdInit(void);
 ************************************************************************************/
 unsigned char nokLcdSetPixel(unsigned char xPix, unsigned char yPix);
 
-
 /************************************************************************************
 * Function: nokLcdWrite
 * - performs write sequence to send data or command to nokLCD. Calls spiTxByte transmit serially to nokLCD
@@ -94,9 +91,6 @@ unsigned char nokLcdSetPixel(unsigned char xPix, unsigned char yPix);
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
 void nokLcdWrite(char lcdByte, char cmdType);
-
-
-
 
 /************************************************************************************
 * Function: nokLcdClear
