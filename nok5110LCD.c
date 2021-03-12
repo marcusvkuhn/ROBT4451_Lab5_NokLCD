@@ -6,7 +6,6 @@
  *  Created on: Feb 20th, 2017
  **************************************************************************************************/
 
-
 // nok5110LCD pin connectivity --> to MSP-EXP430F5529LP EVM.
 //  8-LIGHT  	-->  	no connection necessary
 //  7-SCLK  	-->  	MS430EVM  P4.3 or UCB1CLK
@@ -17,11 +16,9 @@
 //  2-GND  		-->  	MS430EVM or supply VSS
 //  1-VDD  		-->  	MS430EVM or supply 3V3. Consider controlling it with an I/O pin
 
-
 #include <msp430.h>
 #include "nok5110LCD.h"
 #include "usciSpi.h"
-
 
 // 2-D 84x6 array that stores the current pixelated state of the display.
 // remember a byte (8 bits) sets 8 vertical pixels in a column allowing 8x6=48 rows
@@ -45,12 +42,15 @@ static unsigned char currentPixelDisplay[LCD_MAX_COL][LCD_MAX_ROW / LCD_ROW_IN_B
 ************************************************************************************/
 void nokLcdInit(void) {
     // power-on RST sequence here.  The display is not powered until this sequence occurs.
+    // hold VCC low
+    P2OUT &= ~BIT6;
+    // hold !RES high
+    P2OUT |= BIT3;
     // init PWR RST pins
     P2DIR |= BIT3 + BIT6;
-    // hold VCC and RES low
-    P2OUT &= ~(BIT3 + BIT6);
     // power on
     _PWR;
+    _RST;
 
     P4OUT   &=  ~(SCE | DAT_CMD);   // Set DC and CE Low. This should be made a macro.  But is this command necassary? Doesn't nokLcdWrite do it?
 
@@ -68,7 +68,6 @@ void nokLcdInit(void) {
      which must be done manually. Try removing this function to see what happens.*/
 
 }
-
 
 /************************************************************************************
 * Function: nokLcdWrite
@@ -109,10 +108,6 @@ void nokLcdWrite(char lcdByte, char cmdType) {
     P4OUT &= ~SCE;
 }
 
-
-
-
-
 /************************************************************************************
 * Function: nokLcdSetPixel
 * -
@@ -151,6 +146,22 @@ unsigned char  nokLcdSetPixel(unsigned char xPos, unsigned char yPos) {
 	return 1;
 }
 
+/************************************************************************************
+* Function: nokLcdDrawScrnLine
+* - draws either a horizontal or a vertical line on the Nokia display
+*
+* arguments: x coordinate
+*            y coordinate
+*
+* return: 0 if inputs were valid, -1 if not
+* Author: Marcus Kuhn
+* Date: Mar 11th, 2021
+* Modified: <date of any mods> usually taken care of by rev control
+************************************************************************************/
+int nokLcdDrawScrnLine(int x, int y){
+    //-- tbd
+}
+
 
 /************************************************************************************
 * Function: nokLcdClear
@@ -182,6 +193,3 @@ void nokLcdClear(void) {
         }
     }
 }
-
-
-

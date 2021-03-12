@@ -52,7 +52,6 @@
 #define _PWR P2OUT |= BIT6;                // power on transistor
 #define _RST P2OUT &= ~BIT3; P2OUT |= BIT3 // reset strobe
 
-
 /************************************************************************************
 * Function: nokLcdInit
 * -
@@ -91,6 +90,20 @@ unsigned char nokLcdSetPixel(unsigned char xPix, unsigned char yPix);
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
 void nokLcdWrite(char lcdByte, char cmdType);
+
+/************************************************************************************
+* Function: nokLcdDrawScrnLine
+* - draws either a horizontal or a vertical line on the Nokia display
+*
+* arguments: x coordinate
+*            y coordinate
+*
+* return: 0 if inputs were valid, -1 if not
+* Author: Marcus Kuhn
+* Date: Mar 11th, 2021
+* Modified: <date of any mods> usually taken care of by rev control
+************************************************************************************/
+int nokLcdDrawScrnLine(int x, int y);
 
 /************************************************************************************
 * Function: nokLcdClear

@@ -32,10 +32,11 @@ void usciB1SpiInit(unsigned char spiMST, unsigned int sclkDiv, unsigned char scl
 	    UCB1STAT = UCLISTEN;
 
 	// configure the SPI B1 pins with PxSEL register
-	P4SEL |= SIMO_B1 + SOMI_B1 + SCLK_B1;
+	P4SEL |= SIMO_B1 + SCLK_B1;
 
 	// configure P6.0 to be output (SS)
-	P6DIR |= SS_B1;
+	P6DIR |= SS_B1;     // set P6.0 as output
+	P6OUT |= SS_B1;     // set it high (de-asserted)
 
 	UCB1CTL1 &= ~UCSWRST;                     	// **Initialize USCI state machine**  take it out of reset
 }
@@ -64,12 +65,14 @@ void usciB1SpiPutChar(char txByte) {
 int usciB1SpiTxBuffer(int* buffer, int buffLen){
     volatile int i = 0;
 
-    P6OUT &= ~SS_B1;     //assert SS
-
     for(i = 0; (i < buffLen) && (*buffer != NULL_CHAR) ; i++){
+        dummyRXIFG = 0;
+        P6OUT &= ~SS_B1;     //assert SS
         usciB1SpiPutChar(*buffer++);
+        //while ((UCB1IFG & UCRXIFG)); // poll RXIFG to know that the transmission ended
+        while(dummyRXIFG == 0);
+        P6OUT |= SS_B1;       //de-assert SS immediately after the last byte has been transmitted
     }
-    P6OUT |= SS_B1;       //de-assert SS immediately after the last byte has been transmitted
 
     //usciB1SpiPutChar('\n');             // move terminal to next line
     return i;
@@ -93,7 +96,9 @@ __interrupt void usciB1SpiIsr(void) {
   	  case 0: break;                          	// Vector 0 - no interrupt
   	  case 2:                                 	// Vector 2 - RXIFG. Highest priority
 		// process RXIFG
-  		
+  		spiRxBuffer[rxIdx] = UCB1RXBUF;
+  		rxIdx++;
+  		dummyRXIFG = 1;
   		  break;
 
   	  case 4:									// Vector 4 - TXIFG

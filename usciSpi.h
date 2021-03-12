@@ -24,7 +24,10 @@ void usciB1SpiPutChar(char txByte);
 int usciB1SpiTxBuffer(int* buffer, int buffLen);
 void numStringToInt(char* rxString, int* rxBuffer);
 
+unsigned char spiRxBuffer[BUFFER_SZ] = {};
+static unsigned int rxIdx = 0;
 
+static unsigned int dummyRXIFG = 0;
 
 
 
