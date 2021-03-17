@@ -14,7 +14,7 @@ int main(void){
 
     // activate the SCE  chip select
     P4OUT &= ~SCE;
-    P4DIR |= SCE;
+    P4DIR |= SCE + DAT_CMD;
 
     P8OUT |= BIT1;
     P8DIR |= BIT1;
@@ -22,13 +22,19 @@ int main(void){
 	usciB1SpiInit(1,2,0x02,0);
 	nokLcdInit();
 
-    nokLcdSetPixel(5,5);
-    nokLcdSetPixel(50,20);
-    nokLcdSetPixel(50,21);
-    nokLcdSetPixel(50,22);
-    nokLcdSetPixel(50,23);
-	//nokLcdDrawScrnLine(5, 5, 'V');
-	while (1);
+//    nokLcdSetPixel(5,5);
+//    nokLcdSetPixel(5,6);
+//    nokLcdSetPixel(6,5);
+//    nokLcdSetPixel(1,1);
+//    nokLcdSetPixel(10,10);
+    nokLcdDrawScrnLine(5, 5, 'V');
+    nokLcdDrawScrnLine(0, 0, 'H');
+    nokLcdDrawScrnLine(10, 43, 'V');
+
+    // debugging loop
+	while (1){
+	    //nokLcdSetPixel(5,5);
+	}
 
 	return 0;
 }

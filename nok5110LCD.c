@@ -49,7 +49,7 @@ void nokLcdInit(void) {
     // set PWR RST pins as outputs
     P2DIR |= BIT3 + BIT6;
     // PWR RST Sequence
-    _PWR;   // bring VCC high through P2.6 // #define _PWR P2OUT |= BIT6;
+    _PWR;   // bring VCC high through P2.6 // #define _PWR P2OUT |= BIT6
     _RST;   // send reset strobe through P2.3 // #define _RST P2OUT &= ~BIT3; P2OUT |= BIT3
 
     P4OUT   &=  ~(SCE | DAT_CMD);   // Set DC and CE Low. This should be made a macro.  But is this command necassary? Doesn't nokLcdWrite do it?
@@ -91,7 +91,11 @@ void nokLcdWrite(char lcdByte, char cmdType) {
 
         default: break;
     }
-	// activate the SCE  chip select
+
+    // clear RXIFG by reading RXBUF
+    UCB1RXBUF = 0;
+
+    // activate the SCE  chip select
     P4OUT &= ~SCE;
 
     // transmit lcdByte with spiPutChar from Lab 3.  That function must stay in the spi C module.

@@ -49,7 +49,7 @@
 #define LCD_ROW_IN_BANK 8 	    // 8 rows in a bank. 6 banks, so  8x6 = 48 rows of pixels. y coordinate
 
 //-- added by me
-#define _PWR P2OUT |= BIT6;                // power on transistor
+#define _PWR P2OUT |= BIT6                // power on transistor
 #define _RST P2OUT &= ~BIT3; P2OUT |= BIT3 // reset strobe
 
 /************************************************************************************
