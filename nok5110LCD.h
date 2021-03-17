@@ -8,14 +8,14 @@
 
 // nok5110LCD pin connectivity --> to MSP-EXP430F5529LP EVM.
 // Assumes UCB1SI  is used.
-//  8-GND  		-->  	MS430EVM or supply VSS
-//  7-LIGHT     -->     no connection necessary unless you want it on
-//  6-VCC  		-->  	MS430EVM or supply 3V3
-//  5-SCLK      -->     MS430EVM  P4.3 or UCB1CLK
-//  4-DN(MOSI)  -->     MS430EVM  P4.1 or UCB1SIMO
-//  3-D/C'      -->     MS430EVM  P4.2.     Kept as I/O pin !!
-//  2-SCE'      -->     MS430EVM  P4.0. chip select     Kept as I/O pin !!
-//  1-RST'      -->     MS430EVM or supply VSS.  Can tie to I/O pin if user wants. data sheet says RESET is necessary .. but?
+//  8-GND  		-->  	MS430 Ground
+//  7-LIGHT     -->     P8.1
+//  6-VCC  		-->  	MSP430EVM P2.6
+//  5-SCLK      -->     MSP430EVM  P4.3 or UCB1CLK
+//  4-DN(MOSI)  -->     MSP430EVM  P4.1 or UCB1SIMO
+//  3-D/C'      -->     MSP430EVM  P4.2 Kept as I/O pin !!
+//  2-SCE'      -->     MSP430EVM  P4.0 chip select     Kept as I/O pin !!
+//  1-RST'      -->     MSP430EVM or supply VSS.  Can tie to I/O pin if user wants. data sheet says RESET is necessary .. but?
 
 
 #ifndef nok5110LCD_H_
@@ -76,7 +76,7 @@ void nokLcdInit(void);
 * Date: Feb 20th, 2017
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
-unsigned char nokLcdSetPixel(unsigned char xPix, unsigned char yPix);
+unsigned char nokLcdSetPixel(unsigned char xPos, unsigned char yPos);
 
 /************************************************************************************
 * Function: nokLcdWrite
@@ -97,13 +97,14 @@ void nokLcdWrite(char lcdByte, char cmdType);
 *
 * arguments: x coordinate
 *            y coordinate
+*            mode - Vertical or Horizontal line
 *
 * return: 0 if inputs were valid, -1 if not
 * Author: Marcus Kuhn
 * Date: Mar 11th, 2021
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
-int nokLcdDrawScrnLine(int x, int y);
+int nokLcdDrawScrnLine(int x, int y, char mode);
 
 /************************************************************************************
 * Function: nokLcdClear

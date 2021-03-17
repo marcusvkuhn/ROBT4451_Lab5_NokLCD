@@ -46,11 +46,11 @@ void nokLcdInit(void) {
     P2OUT &= ~BIT6;
     // hold !RES high
     P2OUT |= BIT3;
-    // init PWR RST pins
+    // set PWR RST pins as outputs
     P2DIR |= BIT3 + BIT6;
-    // power on
-    _PWR;
-    _RST;
+    // PWR RST Sequence
+    _PWR;   // bring VCC high through P2.6 // #define _PWR P2OUT |= BIT6;
+    _RST;   // send reset strobe through P2.3 // #define _RST P2OUT &= ~BIT3; P2OUT |= BIT3
 
     P4OUT   &=  ~(SCE | DAT_CMD);   // Set DC and CE Low. This should be made a macro.  But is this command necassary? Doesn't nokLcdWrite do it?
 
@@ -66,7 +66,6 @@ void nokLcdInit(void) {
     /* Sometimes necessary since the pixel ram is not defined after a PWR on and RST. The best practice would be to
      always clear it so no residual pixels are set. You will sometimes see random pixels set and I think it is from not clearing the memory
      which must be done manually. Try removing this function to see what happens.*/
-
 }
 
 /************************************************************************************
@@ -81,9 +80,6 @@ void nokLcdInit(void) {
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
 void nokLcdWrite(char lcdByte, char cmdType) {
-
-	// ********** complete this function. *************
-
 	// check cmdType and output correct DAT_CMD signal to PORT4 based on it. Use definitions in .h file
     switch(cmdType){
         // -- if its a command, issue a 0
@@ -96,7 +92,7 @@ void nokLcdWrite(char lcdByte, char cmdType) {
         default: break;
     }
 	// activate the SCE  chip select
-    P4OUT |= SCE;
+    P4OUT &= ~SCE;
 
     // transmit lcdByte with spiPutChar from Lab 3.  That function must stay in the spi C module.
     usciB1SpiPutChar(lcdByte);
@@ -105,7 +101,7 @@ void nokLcdWrite(char lcdByte, char cmdType) {
     while (!(UCB1IFG & UCRXIFG)); // When RXIFG == 1, RXBUF has received a complete character
 
     // when transmission is complete deactivate the SCE */
-    P4OUT &= ~SCE;
+    P4OUT |= SCE;
 }
 
 /************************************************************************************
@@ -150,22 +146,36 @@ unsigned char  nokLcdSetPixel(unsigned char xPos, unsigned char yPos) {
 * Function: nokLcdDrawScrnLine
 * - draws either a horizontal or a vertical line on the Nokia display
 *
-* arguments: x coordinate
-*            y coordinate
+* arguments: xCol coordinate
+*            yLine coordinate
 *
 * return: 0 if inputs were valid, -1 if not
 * Author: Marcus Kuhn
 * Date: Mar 11th, 2021
 * Modified: <date of any mods> usually taken care of by rev control
 ************************************************************************************/
-int nokLcdDrawScrnLine(int x, int y){
-    //-- tbd
+int nokLcdDrawScrnLine(int xCol, int yRow, char mode){
+    int valid = 0;
+
+    // --  check if both coordinates are within boundaries
+    if(xCol < LCD_MAX_COL && yRow < LCD_MAX_ROW){
+        if(mode == 'H'){                                    // a mode == 'H' is a horizontal line
+            while(xCol < LCD_MAX_COL)
+                nokLcdSetPixel(xCol++,yRow);         // auto-increment x after each call, until Max is reached
+        }
+        else if (mode == 'V')                               // likewise
+            while(yRow < LCD_MAX_ROW)
+                nokLcdSetPixel(xCol,yRow++);        // auto-increment y after each call, until Max is reached
+        else valid = -1;
+    }else valid = -1;                                       // if x, y or mode are illegal
+
+    return valid;
 }
 
 
 /************************************************************************************
 * Function: nokLcdClear
-* - clears all pixels on LCD diplay. results in blank display.
+* - clears all pixels on LCD display. results in blank display.
 * argument:
 *   none
 * return: none
