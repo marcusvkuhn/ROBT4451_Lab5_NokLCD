@@ -17,6 +17,7 @@
 //  1-VDD  		-->  	MS430EVM or supply 3V3. Consider controlling it with an I/O pin
 
 #include <msp430.h>
+#include <math.h>
 #include "nok5110LCD.h"
 #include "usciSpi.h"
 
@@ -176,6 +177,89 @@ int nokLcdDrawScrnLine(int xCol, int yRow, char mode){
     return valid;
 }
 
+/************************************************************************************
+* Function: nokLcdDrawLine
+* - draws a line between two coordinates in the Nokia display using bresenham's line algorithm
+*
+* arguments: (x0, y0) start coordinate
+*            (x1, y1) finish coordinate
+*
+* return: 0 if inputs were valid, -1 if not
+* Author: Marcus Kuhn
+* Date: Mar 20th, 2021
+* Modified: <date of any mods> usually taken care of by rev control
+************************************************************************************/
+int nokLcdDrawLine(int x0, int y0, int x1, int y1){
+    volatile int valid = 0;
+
+    // check if any coordinate is outside display array range
+    if(x0 < LCD_MAX_COL && y0 < LCD_MAX_ROW && x1 < LCD_MAX_COL && y1 < LCD_MAX_ROW){
+        if (abs(y1 - y0) < abs(x1 - x0)){   // absolute change in x is greater than in y
+            if (x0 > x1)
+                plotLineLow(x1, y1, x0, y0);
+            else
+                plotLineLow(x0, y0, x1, y1);
+        }
+        else {
+            if (y0 > y1)
+                plotLineHigh(x1, y1, x0, y0);
+            else
+                plotLineHigh(x0, y0, x1, y1);
+        }
+    } else valid = -1;
+
+    return valid;
+}
+
+//-- Bresenham's line algorithm for when dx > dy
+void plotLineLow(int x0, int y0, int x1, int y1){
+    volatile int dx = x1 - x0,
+                 dy = y1 - y0,
+                 yi = 1,
+                 y, x, D;
+
+    if (dy < 0){
+        yi = -1;
+        dy = -dy;
+    }
+
+    D = (2 * dy) - dx;
+    y = y0;
+
+    for (x = 0; x <= x1; x++){
+        nokLcdSetPixel(x, y);
+        if (D > 0){
+            y = y + yi;
+            D = D + (2 * (dy - dx));
+        }else
+            D = D + 2*dy;
+    }
+}
+
+//-- Bresenham's line algorithm for when dy > dx
+void plotLineHigh(int x0, int y0, int x1, int y1){
+    volatile int dx = x1 - x0,
+                 dy = y1 - y0,
+                 xi = 1,
+                 y, x, D;
+
+    if (dx < 0){
+        xi = -1;
+        dx = -dx;
+    }
+
+    D = (2 * dx) - dy;
+    x = x0;
+
+    for (y = y0; y <= y1; y++){
+        nokLcdSetPixel(x, y);
+        if (D > 0){
+            x = x + xi;
+            D = D + (2 * (dx - dy));
+        }else
+            D = D + 2*dx;
+    }
+}
 
 /************************************************************************************
 * Function: nokLcdClear

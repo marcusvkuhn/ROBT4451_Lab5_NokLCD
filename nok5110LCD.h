@@ -107,6 +107,26 @@ void nokLcdWrite(char lcdByte, char cmdType);
 int nokLcdDrawScrnLine(int x, int y, char mode);
 
 /************************************************************************************
+* Function: nokLcdDrawLine
+* - draws a line between two coordinates in the Nokia display using bresenham's line algorithm
+*
+* arguments: (x0, y0) start coordinate
+*            (x1, y1) finish coordinate
+*
+* return: 0 if inputs were valid, -1 if not
+* Author: Marcus Kuhn
+* Date: Mar 20th, 2021
+* Modified: <date of any mods> usually taken care of by rev control
+************************************************************************************/
+int nokLcdDrawLine(int x0, int y0, int x1, int y1);
+
+//-- Bresenham's line algorithm for when dx > dy
+void plotLineLow(int x0, int y0, int x1, int y1);
+
+//-- Bresenham's line algorithm for when dy > dx
+void plotLineHigh(int x0, int y0, int x1, int y1);
+
+/************************************************************************************
 * Function: nokLcdClear
 * - clears all pixels on LCD diplay. results in blank display.
 * argument:
