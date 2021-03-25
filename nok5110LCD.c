@@ -179,7 +179,7 @@ int nokLcdDrawScrnLine(int xCol, int yRow, char mode){
 
 /************************************************************************************
 * Function: nokLcdDrawLine
-* - draws a line between two coordinates in the Nokia display using bresenham's line algorithm
+* - draws a line between two coordinates in the Nokia display using Bresenham's line algorithm
 *
 * arguments: (x0, y0) start coordinate
 *            (x1, y1) finish coordinate
@@ -209,6 +209,37 @@ int nokLcdDrawLine(int x0, int y0, int x1, int y1){
     } else valid = -1;
 
     return valid;
+}
+
+/************************************************************************************
+* Function: nokLcdClear
+* - clears all pixels on LCD display. results in blank display.
+* argument:
+*   none
+* return: none
+* Author: Greg Scutt
+* Date: Feb 20th, 2017
+* Modified: <date of any mods> usually taken care of by rev control
+************************************************************************************/
+void nokLcdClear(void) {
+
+    unsigned char bank; // bank (group of 8 rows) on which pixel falls
+    unsigned char x;    // x coordinate to track columns
+
+    // sweep banks (or group of 8 rows)
+    for (bank = 0; bank < 6; bank++) {
+
+        // start in first column of the bank (0, bank)
+        nokLcdWrite(LCD_SET_XRAM | 0, DC_CMD);
+        // start in current bank
+        nokLcdWrite(LCD_SET_YRAM | bank, DC_CMD);
+
+        // sweep columns. X address is auto-incremented by one since V = 0.
+        for (x = 0; x < LCD_MAX_COL; x++) {
+            currentPixelDisplay[x][bank] = 0;       // update pixel display array to keep pixel state current
+            nokLcdWrite(0, DC_DAT);                 // clear all 8 pixels at (x,bank)
+        }
+    }
 }
 
 //-- Bresenham's line algorithm for when dx > dy
@@ -258,36 +289,5 @@ void plotLineHigh(int x0, int y0, int x1, int y1){
             D = D + (2 * (dx - dy));
         }else
             D = D + 2*dx;
-    }
-}
-
-/************************************************************************************
-* Function: nokLcdClear
-* - clears all pixels on LCD display. results in blank display.
-* argument:
-*   none
-* return: none
-* Author: Greg Scutt
-* Date: Feb 20th, 2017
-* Modified: <date of any mods> usually taken care of by rev control
-************************************************************************************/
-void nokLcdClear(void) {
-
-    unsigned char bank; // bank (group of 8 rows) on which pixel falls
-    unsigned char x;    // x coordinate to track columns
-
-    // sweep banks (or group of 8 rows)
-    for (bank = 0; bank < 6; bank++) {
-
-        // start in first column of the bank (0, bank)
-        nokLcdWrite(LCD_SET_XRAM | 0, DC_CMD);
-        // start in current bank
-        nokLcdWrite(LCD_SET_YRAM | bank, DC_CMD);
-
-        // sweep columns. X address is auto-incremented by one since V = 0.
-        for (x = 0; x < LCD_MAX_COL; x++) {
-            currentPixelDisplay[x][bank] = 0;       // update pixel display array to keep pixel state current
-            nokLcdWrite(0, DC_DAT);                 // clear all 8 pixels at (x,bank)
-        }
     }
 }
