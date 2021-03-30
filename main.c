@@ -4,6 +4,8 @@
 #include "nok5110LCD.h"
 #include "cmdNok5110LCD.h"
 
+#include <math.h>
+
 
 /**
  * main client file for nokia 5110 LCD display interface
@@ -29,7 +31,6 @@ int main(void){
 
     char rxString[50];
     unsigned char errorMsg[] = "Error!";
-
 
     int cmdIndex;
         do{
